@@ -1,0 +1,6 @@
+{
+    "always": [
+        {"to": "/form", "label": "Form"},
+        {"to": "/user", "label": "User"}
+    ]
+}
