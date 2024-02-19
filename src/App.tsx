@@ -4,8 +4,11 @@ import './App.css';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Navigator, { RouteType } from './components/navigators/Navigator';
 import Form from './components/pages/Form';
-import User from './components/pages/User';
+import User from './components/pages/ListUsers';
 import routesConfig from './config/routes-config.json'
+import ListUsers from './components/pages/ListUsers';
+import { Provider } from 'react-redux';
+import {store} from '../src/redux/store';
 
 const {always} = routesConfig;
 
@@ -20,11 +23,12 @@ const App: React.FC = () => {
   const routes = getRoutes();
 
 
-  return <BrowserRouter>
+  return <Provider store={store}>
+  <BrowserRouter>
     <Routes>
         <Route path='/' element={<Navigator routes={routes}/>}>
           <Route path='form' element={<Form/>}/>
-          <Route path='user' element={<User/>}/>
+          <Route path='user' element={<ListUsers/>}/>
 
         </Route>
   
@@ -32,6 +36,7 @@ const App: React.FC = () => {
     </Routes>
   
   </BrowserRouter>
+  </Provider>
 }
 
 export default App;

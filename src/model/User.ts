@@ -1,7 +1,7 @@
 type User = {
     id?: any,
-    userName: string;
-    phoneNumber: string;
+    username: string;
+    phonenumber: string;
     password: string
 }
 

@@ -1,67 +1,61 @@
-import { Box, Button, TextField, Typography } from "@mui/material";
+import { Box, Button, TextField } from "@mui/material";
 import { useState } from "react";
 import User from "../../model/User";
+import { userService } from "../../config/service-config";
+import { useDispatch } from "react-redux";
+import { userActions } from "../../redux/slices/userSlice";
+import { useSelectorUser } from "../../redux/store";
 
-    const initialUser: User = {
-        userName: "",
-        phoneNumber: "",
-        password: ""
-    }
-
-
-const Form: React.FC = () => {
-    const regexPhoneNum = /^[0-9]{0,10}$/;
-   const regexPassword = /^(?=.*[A-Z])(?=.*\W)[a-zA-Z0-9\W]{6,12}$/;
    
-    const [user, setUser] = useState<User>(initialUser);
+const Form: React.FC = () => {
+   
+    const regexPassword = /^(?=.*[A-Z])(?=.*\W)[a-zA-Z0-9\W]{6,12}$/;
+   
+    const [user, setUser] = useState<User|undefined>();
 
     const [isErrorConfPass, setIsErrConfPass] = useState(true);
     
-
-    function handlerUserName(event: any) {
-        const {name, value} = event.target;
-        setUser({...user, [name]: value});
-    }
-
-    function handlerPhoneNum (event:any) {
-        const phoneNum: string = event.target.value;
-        
-        if (regexPhoneNum.test(phoneNum)) {
-            const userCopy = {...user};
-            userCopy.phoneNumber = phoneNum;
-            setUser(userCopy);
-         }
-            
-        }
-
-
-
-         const onSubmitFn = (event: any) => {
+    const dispatch = useDispatch();
+    const usRed = useSelectorUser();
+    console.log('userRedux:', usRed);
+    
+   
+         async function onSubmitFn (event: any) {
             event.preventDefault();
             const data = new FormData(event.currentTarget);
+            const inputedName: string = data.get("username") as string;
+            const inputedPhoneNum: string = data.get("phonenumber") as string
             const inputedPass: string = data.get('password') as string;
             const confPass: string = data.get('confPassword') as string;
+
+           
             if (regexPassword.test(inputedPass) && inputedPass == confPass) {
-                const userCopy = {... user};
-                userCopy.password = confPass;
-                setUser(userCopy);
+
+                let newUser: User = {
+                    username: inputedName,
+                    phonenumber: inputedPhoneNum,
+                    password: confPass
+                }
+
+                setUser(newUser);
                 setIsErrConfPass(false);
+                await userService.addUser(newUser);
+                dispatch(userActions.set(newUser));
                 event.target.reset();
-                console.log(userCopy);
+               
             } else {
                 setIsErrConfPass(true);
             }
 
-        
-            
-        }
+      }
 
         function onResetFn() {
-            setUser(initialUser);
+            setUser(user);
         }
 
         
     return (
+        
     <Box component='form'
      onSubmit={onSubmitFn}
      onReset={onResetFn} 
@@ -77,25 +71,24 @@ const Form: React.FC = () => {
     }}
   >
     <TextField
-    name="userName"
+    name="username"
       size="small"
       type="text"
       required
       fullWidth
       label="User Name"
       inputProps={{maxLength: 32}}
-      onChange={handlerUserName}
+   
     />
     <TextField
-    name="phoneNumber"
+    name="phonenumber"
       type="number"  
       size="small"
       required
       fullWidth
       label="Phone Number"
-      inputProps={{pattern: `${regexPhoneNum}`}}
-      onChange= {handlerPhoneNum}
-      helperText= {"Enter your phone number upto to 10 numbers"}
+      onInput={(e: any)=> {e.target.value= Math.max(0, parseInt(e.target.value)).toString().slice(0,10)}}
+     helperText= {"Enter your phone number upto to 10 numbers"}
       />
 
     <TextField
@@ -116,7 +109,6 @@ const Form: React.FC = () => {
       required
       fullWidth
       label="Confirm Password"
-     // onChange={handlerConfirmPassword}
       helperText={isErrorConfPass ? "" : "Password confirmed"}
       />  
 
@@ -131,9 +123,11 @@ const Form: React.FC = () => {
       Submit
     </Button>
     </Box>
-
+    
     )
-}
+      }
+    
+
 
 
 export default Form;
